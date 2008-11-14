@@ -45,7 +45,7 @@ MAX_DATA_BYTES = 32
 class Arduino:
     
     def __init__(self, port, baudrate=57600):
-        """"""
+
         self.serial = serial.Serial(port, baudrate, timeout=0.02)
         self.wait_for_data = 0
         self.exec_multibyte_cmd = 0
@@ -62,55 +62,39 @@ class Arduino:
         return "Arduino: %s" % self.serial.port
 
     def pin_mode(self, pin, mode):
-        """
-        """
         self.serial.write(chr(SET_PIN_MODE))
         self.serial.write(chr(pin))
         self.serial.write(chr(mode))
 
     def digital_read(self, port):
-        """
-        Reading from digital port 
-        """
+        """Reading from digital port"""
         pass
 
     def digital_write(self, port, value):
-        """
-        Writing to a digital port
-        """
+        """Writing to a digital port"""
         pass
 
     def analog_read(self, pin):
-        """
-        Reading from analog pin
-        """
+        """Reading from analog pin"""
         pass
 
     def analog_write(self, pin, value):
-        """
-        Writing to a analog pin
-        """
+        """Writing to a analog pin"""
         pass
 
     def loop(self):
-        """
-        """
         pass
         
     def __process(self, data):
-        """
-        Processing input data
-        """
+        """Processing input data"""
         pass
 
     def available(self):
-        """"""
+        """Checking connection status"""
         return self.serial.isOpen()
 
     def __report(self):
-        """
-        Reporting analog and digital pins
-        """
+        """Reporting analog and digital pins"""
         enable = 1
         for port in range(14):
             self.serial.write(chr(REPORT_DIGITAL + port))
