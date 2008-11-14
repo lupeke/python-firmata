@@ -46,7 +46,6 @@ class Arduino:
     
     def __init__(self, port, baudrate=57600):
         """"""
-        
         self.serial = serial.Serial(port, baudrate, timeout=0.02)
         self.wait_for_data = 0
         self.exec_multibyte_cmd = 0
@@ -65,7 +64,6 @@ class Arduino:
     def pin_mode(self, pin, mode):
         """
         """
-        
         self.serial.write(chr(SET_PIN_MODE))
         self.serial.write(chr(pin))
         self.serial.write(chr(mode))
@@ -97,21 +95,22 @@ class Arduino:
     def loop(self):
         """
         """
-        
         pass
         
     def __process(self, data):
         """
         Processing input data
         """
-        
         pass
-           
+
+    def available(self):
+        """"""
+        return self.serial.isOpen()
+
     def __report(self):
         """
         Reporting analog and digital pins
         """
-        
         enable = 1
         for port in range(14):
             self.serial.write(chr(REPORT_DIGITAL + port))
