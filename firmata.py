@@ -16,7 +16,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-""""
+"""
 
 __version__ = "0.1"
 
@@ -32,8 +32,12 @@ SYSTEM_RESET = 0xFF # reset from MIDI
 START_SYSEX = 0xF0 # start a MIDI SysEx message
 END_SYSEX = 0xF7 # end a MIDI SysEx message
 
+# pin modes
 INPUT = 0
 OUTPUT = 1
+PWM = 2
+SERVO = 3
+
 LOW = 0
 HIGH = 1
 MAX_DATA_BYTES = 32
@@ -53,13 +57,18 @@ class Arduino:
         self.analog_input_data = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
         self.major = 0
         self.minor = 0
+        self.__report()
         
-        self._report()
+    def __str__(self):
+        return "Arduino: %s" % self.sp.port
 
     def pin_mode(self, pin, mode):
         """
         """
-        pass
+        
+        self.serial.write(chr(SET_PIN_MODE))
+        self.serial.write(chr(pin))
+        self.serial.write(chr(mode))
 
     def digital_read(self, port):
         """
@@ -81,7 +90,7 @@ class Arduino:
 
     def analog_write(self, pin, value):
         """
-        Writing to a digital pin
+        Writing to a analog pin
         """
         pass
 
@@ -91,16 +100,23 @@ class Arduino:
         
         pass
         
-    def _process(self, data):
+    def __process(self, data):
         """
         Processing input data
         """
         
         pass
            
-    def _report(self):
+    def __report(self):
         """
-        Reporting analog/digital pins
+        Reporting analog and digital pins
         """
         
-        pass
+        enable = 1
+        for port in range(14):
+            self.serial.write(chr(REPORT_DIGITAL + port))
+            self.serial.write(chr(enable))
+            
+        for pin in range(6):
+            self.serial.write(chr(REPORT_ANALOG + pin))
+            self.serial.write(chr(enable))
