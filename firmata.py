@@ -49,7 +49,7 @@ class Arduino:
         
         self.serial = serial.Serial(port, baudrate, timeout=0.02)
         self.wait_for_data = 0
-        self.execute_multibyte_command = 0
+        self.exec_multibyte_cmd = 0
         self.multibyte_channel = 0
         self.stored_input_data = []
         self.digital_output_data =  [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
@@ -60,7 +60,7 @@ class Arduino:
         self.__report()
         
     def __str__(self):
-        return "Arduino: %s" % self.sp.port
+        return "Arduino: %s" % self.serial.port
 
     def pin_mode(self, pin, mode):
         """
