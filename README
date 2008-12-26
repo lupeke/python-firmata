@@ -1,3 +1,10 @@
+v.0.5
+Finish read and write in analog and digital pins. ;)
+
+Add a file to test library.
+Only test analog read and digital write.
+
+v.0.1
 We've just started coding python-firmata. 
 
 A working release is expected for the next few days. Stay tuned! 

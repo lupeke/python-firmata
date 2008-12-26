@@ -18,8 +18,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-__version__ = "0.1"
+__version__ = "0.5"
 
+import time
 import serial
 
 DIGITAL_MESSAGE = 0x90 # send data for a digital port
@@ -44,62 +45,120 @@ MAX_DATA_BYTES = 32
 
 class Arduino:
     
-    def __init__(self, port, baudrate=57600):
+    def __init__(self, port, baudrate=115200):
 
-        self.serial = serial.Serial(port, baudrate, timeout=0.02)
+        self.serial = serial.Serial(port, baudrate, bytesize=8, timeout=2)
+        
         self.wait_for_data = 0
         self.exec_multibyte_cmd = 0
         self.multibyte_channel = 0
-        self.stored_input_data = []
+        self.stored_input_data = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0, 0, 0 ]
+        self.parsing_sysex = False
+        self.sysex_bytes_read = 0
         self.digital_output_data =  [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
         self.digital_input_data  = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
         self.analog_input_data = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-        self.major = 0
-        self.minor = 0
+        self.major_version = 0
+        self.minor_version = 0
         self.__report()
         
     def __str__(self):
         return "Arduino: %s" % self.serial.port
 
     def pin_mode(self, pin, mode):
+        """Setting mode to pin"""
         self.serial.write(chr(SET_PIN_MODE))
         self.serial.write(chr(pin))
         self.serial.write(chr(mode))
 
-    def digital_read(self, port):
-        """Reading from digital port"""
-        pass
+    def digital_read(self, pin):
+        """Reading from digital pin"""
+        return (self.digital_input_data[pin >> 3] >> (pin & 0x07)) & 0x01
 
-    def digital_write(self, port, value):
-        """Writing to a digital port"""
-        pass
+    def digital_write(self, pin, value):
+        """Writing to a digital pin"""
+        
+        port_number = (pin >> 3) & 0x0F
+        
+        if value == 0:
+          self.digital_output_data[port_number] = self.digital_output_data[port_number] & ~(1 << (pin & 0x07))
+        else:
+          self.digital_output_data[port_number] = self.digital_output_data[port_number] | (1 << (pin & 0x07))
+    
+        self.serial.write(chr(DIGITAL_MESSAGE | port_number))
+        self.serial.write(chr(self.digital_output_data[port_number] & 0x7F))
+        self.serial.write(chr(self.digital_output_data[port_number] >> 7))
 
     def analog_read(self, pin):
         """Reading from analog pin"""
-        pass
+        return self.analog_input_data[pin]
 
     def analog_write(self, pin, value):
         """Writing to a analog pin"""
-        pass
-
-    def loop(self):
-        pass
-        
-    def __process(self, data):
-        """Processing input data"""
-        pass
-
+        self.serial.write(chr(ANALOG_MESSAGE | (pin & 0x0F)))
+        self.serial.write(chr(value & 0x7F))
+        self.serial.write(chr(value >> 7))
+    
+    def set_version(self, major, minor):
+        """Setting a minor and major version"""
+        self.major_version = major
+        self.minor_version = minor
+    
     def available(self):
-        """Checking connection status"""
+        """Checking serial connection status"""
         return self.serial.isOpen()
-
+    
+    def iterate(self):
+        """Reading a serial connection to process it"""
+        data = self.serial.read()
+        if data != "":
+            self.__process(ord(data))
+    
+    def __process(self, input_data):
+        """Processing input data"""
+        command = None
+        
+        if self.parsing_sysex:
+            if input_data == END_SYSEX:
+                self.parsing_sysex = false
+                #process_sysex_message
+            else:
+                self.stored_input_data[self.sysex_bytes_read] = input_data
+                self.sysex_bytes_read+=1
+                
+        elif self.wait_for_data > 0 and input_data < 128:
+            self.wait_for_data-=1
+            self.stored_input_data[self.wait_for_data] = input_data;
+      
+            if self.exec_multibyte_cmd != 0 and self.wait_for_data == 0:
+                if self.exec_multibyte_cmd ==  DIGITAL_MESSAGE:
+                    self.digital_input_data[self.multibyte_channel] = (self.stored_input_data[0] << 7) + self.stored_input_data[1]
+                elif self.exec_multibyte_cmd ==  ANALOG_MESSAGE:
+                    self.analog_input_data[self.multibyte_channel] = (self.stored_input_data[0] << 7) + self.stored_input_data[1]
+                elif self.exec_multibyte_cmd ==  REPORT_VERSION:
+                    self.set_version(self.stored_input_data[1], self.stored_input_data[0]);
+      
+        else:
+            if input_data < 0xF0:
+                command = input_data & 0xF0;
+                self.multibyte_channel = input_data & 0x0F;
+            else:
+                command = input_data;
+                # commands in the 0xF* range don't use channel data
+            
+            if command == DIGITAL_MESSAGE or command == ANALOG_MESSAGE or command == REPORT_VERSION:
+                self.wait_for_data = 2
+                self.exec_multibyte_cmd = command
+        
     def __report(self):
         """Reporting analog and digital pins"""
-        enable = 1
-        for port in range(14):
-            self.serial.write(chr(REPORT_DIGITAL + port))
-            self.serial.write(chr(enable))
+        
+        time.sleep(2)
+        
+        for port in range(6):
+            self.serial.write(chr(REPORT_ANALOG | port))
+            self.serial.write(chr(1))
             
-        for pin in range(6):
-            self.serial.write(chr(REPORT_ANALOG + pin))
-            self.serial.write(chr(enable))
+        for port in range(2):
+            self.serial.write(chr(REPORT_DIGITAL | port))
+            self.serial.write(chr(1))
