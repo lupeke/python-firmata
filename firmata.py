@@ -147,7 +147,7 @@ class Arduino:
                 command = input_data & 0xF0
                 self.multibyte_channel = input_data & 0x0F
             else:
-                command = input_data  # commands in the 0xF* range don't use channel data
+                command = input_data # commands in the 0xF* range don't use channel data
             
             if command == DIGITAL_MESSAGE or \
                 command == ANALOG_MESSAGE or \
