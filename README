@@ -2,7 +2,7 @@ Python Firmata is a python API for the firmata protocol.
 
 The aim of this project is to allow developers to communicate with Arduino microcontrollers using Python.
 
-Python Firmata were based on the Arduino library for Processing, and it works fine with Firmata 2.0.
+Python Firmata was based on the Arduino library for Processing, and it works fine with Firmata 2.0.
 
 
 * Getting started
