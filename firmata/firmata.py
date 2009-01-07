@@ -104,28 +104,28 @@ class Arduino:
         """Setting a minor and major version"""
         self.major_version = major
         self.minor_version = minor
-    
+
     def available(self):
         """Checking serial connection status"""
         return self.serial.isOpen()
-    
+
     def delay(self, secs):
         """Waiting in seconds"""
         time.sleep(secs)
         
-    def iterate(self):
+    def loop(self):
         """Reading a serial connection to process it"""
         data = self.serial.read()
         if data != "":
             self.__process(ord(data))
-    
+
     def __process(self, input_data):
         """Processing input data"""
         command = None
         
         if self.parsing_sysex:
             if input_data == END_SYSEX:
-                self.parsing_sysex = false
+                self.parsing_sysex = False
             else:
                 self.stored_input_data[self.sysex_bytes_read] = input_data
                 self.sysex_bytes_read += 1
@@ -141,25 +141,24 @@ class Arduino:
                     self.analog_input_data[self.multibyte_channel] = (self.stored_input_data[0] << 7) + self.stored_input_data[1]
                 elif self.exec_multibyte_cmd ==  REPORT_VERSION:
                     self.set_version(self.stored_input_data[1], self.stored_input_data[0])
-      
+
         else:
             if input_data < 0xF0:
                 command = input_data & 0xF0
                 self.multibyte_channel = input_data & 0x0F
             else:
                 command = input_data # commands in the 0xF* range don't use channel data
-            
+
             if command == DIGITAL_MESSAGE or \
                 command == ANALOG_MESSAGE or \
                 command == REPORT_VERSION:
                 self.wait_for_data = 2
                 self.exec_multibyte_cmd = command
-        
+
     def __report(self):
         """Reporting analog and digital pins"""
-        
+
         self.delay(2)
-        
         for port in range(6):
             self.serial.write(chr(REPORT_ANALOG | port))
             self.serial.write(chr(1))
