@@ -1,3 +1,5 @@
+"""LED example"""
+
 from firmata import *
 
 a = Arduino('/dev/tty.usbserial-A1001NQe')

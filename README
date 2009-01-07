@@ -8,5 +8,5 @@ Python Firmata were based on the Arduino library for Processing, and it works fi
 * Getting started
 	
 Python Firmata requires pySerial (http://pyserial.wiki.sourceforge.net/pySerial) to work properly. Be sure you have uploaded the Firmata firmware (v2) to the Arduino board.
-
+ 
 Take a look at the examples folder to see how it works.
