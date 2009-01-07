@@ -23,5 +23,5 @@ a = Arduino('/dev/tty.usbserial-A1001NQe') # Put your serial port here
 a.pin_mode(2, OUTPUT)
 
 while True:
-    a.loop()
+    a.parse()
     print a.analog_read(2) # Reading from analog pin #2

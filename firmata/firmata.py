@@ -85,7 +85,7 @@ class Arduino:
           self.digital_output_data[port_number] = self.digital_output_data[port_number] & ~(1 << (pin & 0x07))
         else:
           self.digital_output_data[port_number] = self.digital_output_data[port_number] | (1 << (pin & 0x07))
-    
+
         self.serial.write(chr(DIGITAL_MESSAGE | port_number))
         self.serial.write(chr(self.digital_output_data[port_number] & 0x7F))
         self.serial.write(chr(self.digital_output_data[port_number] >> 7))
@@ -113,14 +113,14 @@ class Arduino:
         """Waiting in seconds"""
         time.sleep(secs)
         
-    def loop(self):
-        """Reading a serial connection to process it"""
+    def parse(self):
+        """Preparing the data to be handled"""
         data = self.serial.read()
         if data != "":
             self.__process(ord(data))
 
     def __process(self, input_data):
-        """Processing input data"""
+        """Handling input data"""
         command = None
         
         if self.parsing_sysex:
@@ -133,7 +133,7 @@ class Arduino:
         elif self.wait_for_data > 0 and input_data < 128:
             self.wait_for_data -= 1
             self.stored_input_data[self.wait_for_data] = input_data
-      
+
             if self.exec_multibyte_cmd != 0 and self.wait_for_data == 0:
                 if self.exec_multibyte_cmd ==  DIGITAL_MESSAGE:
                     self.digital_input_data[self.multibyte_channel] = (self.stored_input_data[0] << 7) + self.stored_input_data[1]
@@ -141,7 +141,6 @@ class Arduino:
                     self.analog_input_data[self.multibyte_channel] = (self.stored_input_data[0] << 7) + self.stored_input_data[1]
                 elif self.exec_multibyte_cmd ==  REPORT_VERSION:
                     self.set_version(self.stored_input_data[1], self.stored_input_data[0])
-
         else:
             if input_data < 0xF0:
                 command = input_data & 0xF0
