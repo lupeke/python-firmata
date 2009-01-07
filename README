@@ -4,9 +4,14 @@ The aim of this project is to allow developers to communicate with Arduino micro
 
 Python Firmata was based on the Arduino library for Processing, and it works fine with Firmata 2.0.
 
-
-* Getting started
+== Installation
 	
-Python Firmata requires pySerial (http://pyserial.wiki.sourceforge.net/pySerial) to work properly. Be sure you have uploaded the Firmata firmware (v2) to the Arduino board.
+$ sudo python setup.py install
+
+== Usage
  
 Take a look at the examples folder to see how it works.
+
+== License
+
+GPL v3

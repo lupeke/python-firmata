@@ -1,6 +1,7 @@
-#! /usr/bin/env python
+#!/usr/bin/env python 
+
 """
-Simple LED blinking example using Python Firmata
+Python Firmata is a python API for the Arduino's firmata protocol
 Copyright (C) 2008  laboratorio (info@laboratorio.us)
 
 This program is free software: you can redistribute it and/or modify
@@ -17,14 +18,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from firmata import * 
+VERSION = '0.3'
 
-a = Arduino('/dev/tty.usbserial-A1001NQe')
-a.pin_mode(13, firmata.OUTPUT)
-a.delay(2)
-
-while True:
-    a.digital_write(13, firmata.HIGH)
-    a.delay(2)
-    a.digital_write(13, firmata.LOW)
-    a.delay(2)
+from firmata import *
